@@ -62,9 +62,10 @@ Leader key is `Space`. Bindings live in `config/lua/ide/keys.lua`.
 | `Space d s` | `:DiffStat` | change statistics of the branch (first look: what changed at all) |
 | `Space d f` | `:DiffReviewCurrent` | full git diff of the **current file** in a terminal split |
 
-Base-ref prompts (here, and in `Space o d` / `Space o p`) show your current
-branch and offer **Tab completion over all local + remote branches** — type a
-few letters and press Tab to pick.
+Base-ref prompts (here, and in `Space o d` / `Space o p`) open a **fuzzy
+branch picker**: a live list of all local + remote branches appears, with the
+default (`origin/main`) pinned on top. Type a few letters to filter, `Enter`
+to pick, `Esc` to cancel. The current branch is shown in the prompt label.
 
 ### Python toolchain
 

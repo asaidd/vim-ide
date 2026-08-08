@@ -50,15 +50,51 @@ end
 
 --- Async prompt for a git ref with Tab completion over branches.
 --- Calls `on_ok(ref)` with the chosen value; does nothing on cancel.
+--- Async prompt for a git ref with a visible branch picker.
+--- Opens an fzf-lua fuzzy list of local + remote branches (the default is
+--- pinned to the top). Falls back to vim.ui.input with Tab completion when
+--- fzf-lua is unavailable. Calls `on_ok(ref)`; nothing on cancel.
 function M.prompt_ref(prompt, default, root, on_ok)
   local branches = M.git_branches(root)
   local branch = M.current_branch(root)
   local label = prompt
   if branch then
-    label = prompt:gsub("%s*$", "") .. " (on " .. branch .. "): "
+    label = prompt:gsub("%s*$", "") .. " (on " .. branch .. ")"
+  end
+  local ok_fzf, fzf = pcall(require, "fzf-lua")
+  if ok_fzf and fzf.fzf_exec then
+    local entries = vim.deepcopy(branches)
+    if default and default ~= "" then
+      for i, b in ipairs(entries) do
+        if b == default then
+          table.remove(entries, i)
+          break
+        end
+      end
+      table.insert(entries, 1, default)
+    end
+    fzf.fzf_exec(entries, {
+      prompt = label .. " > ",
+      fzf_opts = { ["--no-multi"] = true },
+      actions = {
+        default = function(selected)
+          if selected and selected[1] and selected[1] ~= "" then
+            on_ok(selected[1])
+          end
+        end,
+      },
+      winopts = {
+        height = 0.4,
+        width = 0.6,
+        row = 0.4,
+        col = 0.5,
+        relative = "editor",
+      },
+    })
+    return
   end
   vim.ui.input({
-    prompt = label,
+    prompt = label .. ": ",
     default = default,
     completion = function(arg)
       arg = arg:lower()
