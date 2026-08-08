@@ -101,7 +101,8 @@ end
 
 --- :OpenCode — open the TUI in a vertical terminal split.
 --- Reuses an existing opencode terminal: repeated presses focus it instead
---- of stacking more opencode screens.
+--- of stacking more opencode screens. Always splits the rightmost window so
+--- the layout stays [sidebar | code | opencode].
 function M.tui()
   local root = util.repo_root()
   if not root then return end
@@ -114,9 +115,20 @@ function M.tui()
       return
     end
   end
-  vim.cmd("vsplit | enew")
-  vim.fn.termopen("opencode", { cwd = root })
-  vim.cmd("startinsert")
+  local target
+  local rightmost = -1
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local col = vim.api.nvim_win_get_position(win)[2]
+    if col > rightmost then
+      rightmost = col
+      target = win
+    end
+  end
+  vim.api.nvim_win_call(target or 0, function()
+    vim.cmd("vsplit | enew")
+    vim.fn.termopen("opencode", { cwd = root })
+    vim.cmd("startinsert")
+  end)
 end
 
 --- :Term <cmd> — run a shell command in a horizontal terminal split.

@@ -50,10 +50,14 @@ Leader key is `Space`. Bindings live in `config/lua/ide/keys.lua`.
 
 | Keys | Command | What it does |
 |---|---|---|
-| `Space o` | `:OpenCode` | open the opencode chat TUI in a right-hand split (`Esc` to leave the terminal, `Ctrl-w l` to go into it) |
+| `Space o` | `:OpenCode` | open the opencode chat TUI in a right-hand split; press again to focus it (`Esc` leaves the terminal, `Ctrl-h` goes back to code) |
 | `Space o e` | `:ExplainCode` | agent explains the **current file** (and symbol under cursor) into a scratch buffer; press `gF` on any `file:line` ref to jump to the code |
 | `Space o d` | `:DiffReview` | agent reviews current branch diff **top-down** (intent → files → risky hunks → verdict) |
 | `Space o p` | `:PRCompare` | agent compares two refs/PR numbers **top-down** (overview → behavioral differences → per-file → verdict) |
+
+Window layout is always `sidebar | code | opencode`: `Ctrl-l` from code enters
+opencode, `Ctrl-h` from opencode returns to code, and `Space o` re-focuses the
+same terminal instead of stacking another one.
 
 ### Diff views (no agent — instant)
 
