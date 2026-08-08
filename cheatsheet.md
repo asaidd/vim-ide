@@ -99,7 +99,7 @@ to pick, `Esc` to cancel. The current branch is shown in the prompt label.
 
 | Keys | What it does |
 |---|---|
-| `Ctrl-h` / `Ctrl-j` / `Ctrl-k` / `Ctrl-l` | leave the terminal, jump left / down / up / right |
+| `Ctrl-h` / `Ctrl-j` / `Ctrl-k` / `Ctrl-l` | jump between **all** windows (sidebar ↔ code ↔ terminal) — works in normal and terminal mode |
 | `Ctrl-q` | close the terminal split |
 | `Esc` | leave terminal mode to normal mode in the same window |
 

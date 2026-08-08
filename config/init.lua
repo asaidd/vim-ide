@@ -118,7 +118,7 @@ require("lazy").setup({
     config = function()
       require("aerial").setup({
         backends = { "lsp", "treesitter", "markdown" },
-        attach_mode = "global",
+        attach_mode = "window",
         show_lnum = false,
         layout = { default_direction = "left", max_width = 40 },
       })

@@ -75,6 +75,12 @@ function M.setup()
   vim.keymap.set("i", "<A-Left>", "<C-o><C-o>", { desc = "jump back (insert mode)" })
   vim.keymap.set("i", "<A-Right>", "<C-o><C-i>", { desc = "jump forward (insert mode)" })
 
+  -- window navigation: same Ctrl+h/j/k/l in normal and terminal mode
+  vim.keymap.set("n", "<C-h>", "<C-w>h", { desc = "window left" })
+  vim.keymap.set("n", "<C-j>", "<C-w>j", { desc = "window down" })
+  vim.keymap.set("n", "<C-k>", "<C-w>k", { desc = "window up" })
+  vim.keymap.set("n", "<C-l>", "<C-w>l", { desc = "window right" })
+
   -- terminal buffers
   vim.keymap.set("t", "<C-h>", "<C-\\><C-n><C-w>h", { desc = "leave terminal: left" })
   vim.keymap.set("t", "<C-j>", "<C-\\><C-n><C-w>j", { desc = "leave terminal: down" })
