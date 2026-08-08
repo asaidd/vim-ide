@@ -68,7 +68,7 @@ Leader key is `Space`. Bindings live in `config/lua/ide/keys.lua`.
 |---|---|---|
 | `Space t` | `:Term uv run pytest` | run tests |
 | `Space c` | `:Term make check` | lint + types + tests in one shot |
-| `Space f` | LSP format | format current buffer (pyright) |
+| `Space F` | LSP format | format current buffer (pyright) — `f` is reserved for the fzf prefix |
 | `gd` / `gD` | LSP | go to definition / references |
 | `K` | LSP | hover documentation |
 | `Space r` | LSP | rename symbol |

@@ -82,7 +82,8 @@ require("lazy").setup({
         callback = function(args)
           local client = vim.lsp.get_client_by_id(args.data.client_id)
           if client and client.server_capabilities.documentFormattingProvider then
-            vim.keymap.set("n", "<leader>f", vim.lsp.buf.format, { buffer = args.buf })
+            -- `<leader>F` not `<leader>f`: `f` is reserved for the fzf prefix (`ff`/`fg`).
+            vim.keymap.set("n", "<leader>F", vim.lsp.buf.format, { buffer = args.buf })
           end
         end,
       })
@@ -101,6 +102,6 @@ require("lazy").setup({
   },
 })
 
-require("ide.keys")
+require("ide.keys").setup()
 require("ide.agent")
 require("ide.diff-review")
