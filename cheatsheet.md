@@ -84,6 +84,14 @@ Leader key is `Space`. Bindings live in `config/lua/ide/keys.lua`.
 | `Space h` | | clear search highlight |
 | `:Term git status` | | any shell command in a split |
 
+### Terminal splits (opencode TUI, tests, shells)
+
+| Keys | What it does |
+|---|---|
+| `Ctrl-h` / `Ctrl-j` / `Ctrl-k` / `Ctrl-l` | leave the terminal, jump left / down / up / right |
+| `Ctrl-q` | close the terminal split |
+| `Esc` | leave terminal mode to normal mode in the same window |
+
 ### Scratch buffers (agent results)
 
 | Keys | What it does |
