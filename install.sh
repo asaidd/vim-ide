@@ -74,6 +74,19 @@ sed "s|{{CHEATSHEET_PATH}}|$REPO_DIR/cheatsheet.md|g" \
   "$REPO_DIR/commands/cheatsheet.md" > "$OPENCODE_CMD_DIR/cheatsheet.md"
 echo "==> installed opencode command /cheatsheet -> $OPENCODE_CMD_DIR/cheatsheet.md"
 
+# Make sure ~/.local/bin (nvim/rg install above) is on PATH in the shell rc.
+PATH_LINE='export PATH="$HOME/.local/bin:$PATH"'
+case "${SHELL:-}" in
+  *zsh) SHELL_RC="${ZDOTDIR:-$HOME}/.zshrc" ;;
+  *)    SHELL_RC="$HOME/.bashrc" ;;
+esac
+if [ -f "$SHELL_RC" ] && ! grep -qF "$PATH_LINE" "$SHELL_RC"; then
+  printf '\n# vim-ide: ~/.local/bin (nvim, ripgrep)\n%s\n' "$PATH_LINE" >> "$SHELL_RC"
+  echo "==> added ~/.local/bin to PATH in $SHELL_RC (restart your shell)"
+elif [ ! -f "$SHELL_RC" ]; then
+  echo "!! $SHELL_RC not found; add '$PATH_LINE' to your shell rc manually" >&2
+fi
+
 echo "==> done. Launch with: nvim"
 echo "    cheatsheet:  $REPO_DIR/cheatsheet.md"
 echo "    /cheatsheet: opencode slash command (restart opencode to pick it up)"
