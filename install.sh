@@ -68,5 +68,12 @@ for entry in "$REPO_DIR"/config/* "$REPO_DIR"/prompts; do
   echo "==> linked $entry -> $CONFIG_DIR/$name"
 done
 
+OPENCODE_CMD_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/opencode/commands"
+mkdir -p "$OPENCODE_CMD_DIR"
+sed "s|{{CHEATSHEET_PATH}}|$REPO_DIR/cheatsheet.md|g" \
+  "$REPO_DIR/commands/cheatsheet.md" > "$OPENCODE_CMD_DIR/cheatsheet.md"
+echo "==> installed opencode command /cheatsheet -> $OPENCODE_CMD_DIR/cheatsheet.md"
+
 echo "==> done. Launch with: nvim"
 echo "    cheatsheet:  $REPO_DIR/cheatsheet.md"
+echo "    /cheatsheet: opencode slash command (restart opencode to pick it up)"

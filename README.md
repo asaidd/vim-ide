@@ -44,6 +44,7 @@ config/lua/ide/agent.lua   opencode integration (TUI split + scratch-buffer runs
 config/lua/ide/diff-review.lua  quick local diff views
 config/lua/ide/util.lua     shared helpers
 prompts/               top-down agent prompt templates (explain / diff-review / pr-compare)
+commands/              opencode slash command sources (e.g. /cheatsheet)
 cheatsheet.md          the guide you actually keep open
 install.sh             bootstrap + symlink
 ```
@@ -51,6 +52,8 @@ install.sh             bootstrap + symlink
 ## Usage loop
 
 Read the [cheatsheet](cheatsheet.md) first — it is written for beginners.
+Inside opencode, type `/cheatsheet` to have the agent present the keybindings
+and workflows in the chat (restart opencode after `install.sh`).
 
 1. **Read**: `Space f f` to find files, `gd` to definitions, `K` for docs,
    `Space d f` for what changed recently.
