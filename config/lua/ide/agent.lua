@@ -155,30 +155,30 @@ end
 function M.diff_review()
   local root = util.repo_root()
   if not root then return end
-  local base = vim.fn.input("base ref: ", util.default_base(root))
-  if base == "" then return end
-  local template = read_template("diff-review.md")
-  if not template then return end
-  local prompt = substitute(template, { base = base })
-  local buf = util.open_scratch("diff-review", "markdown")
-  util.append(buf, { "## Diff review  (" .. base .. "...HEAD)", "" })
-  M.run_agent({ buf = buf, dir = root, args = { prompt } })
+  util.prompt_ref("base ref", util.default_base(root), root, function(base)
+    local template = read_template("diff-review.md")
+    if not template then return end
+    local prompt = substitute(template, { base = base })
+    local buf = util.open_scratch("diff-review", "markdown")
+    util.append(buf, { "## Diff review  (" .. base .. "...HEAD)", "" })
+    M.run_agent({ buf = buf, dir = root, args = { prompt } })
+  end)
 end
 
 --- :PRCompare — agent compares two refs / PR numbers side by side (top-down).
 function M.pr_compare()
   local root = util.repo_root()
   if not root then return end
-  local head = vim.fn.input("PR or ref (head): ", "")
-  if head == "" then return end
-  local base = vim.fn.input("PR or ref (base) [main]: ", "main")
-  if base == "" then base = "main" end
-  local template = read_template("pr-compare.md")
-  if not template then return end
-  local prompt = substitute(template, { base = base, head = head })
-  local buf = util.open_scratch("pr-compare", "markdown")
-  util.append(buf, { "## PR compare  " .. head .. "  →  " .. base, "" })
-  M.run_agent({ buf = buf, dir = root, args = { prompt } })
+  util.prompt_ref("PR or ref (head)", "", root, function(head)
+    util.prompt_ref("PR or ref (base)", "main", root, function(base)
+      local template = read_template("pr-compare.md")
+      if not template then return end
+      local prompt = substitute(template, { base = base, head = head })
+      local buf = util.open_scratch("pr-compare", "markdown")
+      util.append(buf, { "## PR compare  " .. head .. "  →  " .. base, "" })
+      M.run_agent({ buf = buf, dir = root, args = { prompt } })
+    end)
+  end)
 end
 
 vim.api.nvim_create_user_command("OpenCode", function() M.tui() end, {})

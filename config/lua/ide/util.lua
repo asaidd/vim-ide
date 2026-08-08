@@ -20,6 +20,63 @@ function M.default_base(root)
   return "HEAD~1"
 end
 
+--- Local and remote branch names for ref completion.
+function M.git_branches(root)
+  if not root then return {} end
+  local out = vim.fn.system(
+    "git -C " .. vim.fn.shellescape(root) .. " branch -a --no-color --format '%(refname:short)'"
+  )
+  if vim.v.shell_error ~= 0 then return {} end
+  local branches = {}
+  for line in out:gmatch("[^\n]+") do
+    line = line:gsub("^%s+", "")
+    if line ~= "" then
+      branches[#branches + 1] = line
+    end
+  end
+  table.sort(branches)
+  return branches
+end
+
+--- Current branch name, or nil outside a repo.
+function M.current_branch(root)
+  if not root then return nil end
+  local out = vim.fn.system(
+    "git -C " .. vim.fn.shellescape(root) .. " rev-parse --abbrev-ref HEAD"
+  )
+  if vim.v.shell_error ~= 0 then return nil end
+  return out:gsub("^%s+", ""):gsub("%s+$", "")
+end
+
+--- Async prompt for a git ref with Tab completion over branches.
+--- Calls `on_ok(ref)` with the chosen value; does nothing on cancel.
+function M.prompt_ref(prompt, default, root, on_ok)
+  local branches = M.git_branches(root)
+  local branch = M.current_branch(root)
+  local label = prompt
+  if branch then
+    label = prompt:gsub("%s*$", "") .. " (on " .. branch .. "): "
+  end
+  vim.ui.input({
+    prompt = label,
+    default = default,
+    completion = function(arg)
+      arg = arg:lower()
+      local matches = {}
+      for _, b in ipairs(branches) do
+        if b:lower():find(arg, 1, true) then
+          matches[#matches + 1] = b
+        end
+      end
+      return matches
+    end,
+  }, function(value)
+    if value and value ~= "" then
+      on_ok(value)
+    end
+  end)
+end
+
 --- Create a scratch buffer, make it current, return the handle.
 function M.open_scratch(name, filetype)
   local buf = vim.api.nvim_create_buf(false, true)

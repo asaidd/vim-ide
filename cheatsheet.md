@@ -62,6 +62,10 @@ Leader key is `Space`. Bindings live in `config/lua/ide/keys.lua`.
 | `Space d s` | `:DiffStat` | change statistics of the branch (first look: what changed at all) |
 | `Space d f` | `:DiffReviewCurrent` | full git diff of the **current file** in a terminal split |
 
+Base-ref prompts (here, and in `Space o d` / `Space o p`) show your current
+branch and offer **Tab completion over all local + remote branches** — type a
+few letters and press Tab to pick.
+
 ### Python toolchain
 
 | Keys | Command | What it does |
