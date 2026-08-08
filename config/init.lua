@@ -40,7 +40,10 @@ require("lazy").setup({
     name = "catppuccin",
     priority = 1000,
     config = function()
-      require("catppuccin").setup({})
+      -- lualine must be a table, not `true`: the theme loader indexes it.
+      require("catppuccin").setup({
+        integrations = { lualine = {} },
+      })
       vim.cmd.colorscheme("catppuccin")
     end,
   },
@@ -56,7 +59,9 @@ require("lazy").setup({
     event = "VeryLazy",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
-      require("lualine").setup({ options = { theme = "catppuccin" } })
+      require("lualine").setup({
+        options = { theme = "catppuccin-mocha" },
+      })
     end,
   },
   {
