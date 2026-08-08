@@ -100,9 +100,20 @@ function M.run_agent(opts)
 end
 
 --- :OpenCode — open the TUI in a vertical terminal split.
+--- Reuses an existing opencode terminal: repeated presses focus it instead
+--- of stacking more opencode screens.
 function M.tui()
   local root = util.repo_root()
   if not root then return end
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    local name = vim.api.nvim_buf_get_name(buf)
+    if name:find("opencode", 1, true) then
+      vim.api.nvim_set_current_win(win)
+      vim.cmd("startinsert")
+      return
+    end
+  end
   vim.cmd("vsplit")
   vim.fn.termopen("opencode", { cwd = root })
   vim.cmd("startinsert")
