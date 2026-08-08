@@ -90,6 +90,41 @@ require("lazy").setup({
     end,
   },
   {
+    "nvim-tree/nvim-tree.lua",
+    event = "VeryLazy",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+      require("nvim-tree").setup({
+        view = { width = 32 },
+        renderer = {
+          root_folder_label = false,
+          indent_markers = { enable = true },
+        },
+        actions = {
+          open_file = {
+            quit_on_open = false,
+            window_picker = { enable = false },
+          },
+        },
+        filters = { dotfiles = false },
+      })
+      -- open the explorer at startup, like VS Code's sidebar
+      require("nvim-tree.api").tree.open()
+    end,
+  },
+  {
+    "stevearc/aerial.nvim",
+    cmd = { "AerialToggle", "AerialOpen", "AerialClose" },
+    config = function()
+      require("aerial").setup({
+        backends = { "lsp", "treesitter", "markdown" },
+        attach_mode = "global",
+        show_lnum = false,
+        layout = { default_direction = "left", max_width = 40 },
+      })
+    end,
+  },
+  {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
     config = function()

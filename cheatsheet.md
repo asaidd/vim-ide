@@ -84,6 +84,12 @@ to pick, `Esc` to cancel. The current branch is shown in the prompt label.
 |---|---|---|
 | `Space f f` | `:FzfLua files` | fuzzy file search |
 | `Space f g` | `:FzfLua grep` | fuzzy grep across the repo |
+| `Space f w` | `:FzfLua grep_cword` | grep the word under the cursor (global search of a symbol) |
+| `Space f s` | `:FzfLua lsp_document_symbols` | jump to any function/class in the current file |
+| `Space e` | sidebar | toggle the file tree (explorer) — opens at startup |
+| `Space a` | sidebar | toggle the functions outline — shows functions/classes of the current file; opening one sidebar closes the other (like VS Code panel tabs) |
+| `Ctrl-click` | LSP | go to definition (VS Code muscle memory) |
+| `Alt-Left` / `Alt-Right` | jumplist | go back to the previous cursor position / forward again (VS Code alt+arrow) |
 | `Space w` / `Space q` | | save / close window |
 | `Space v` / `Space s` | | split vertical / horizontal |
 | `Space h` | | clear search highlight |

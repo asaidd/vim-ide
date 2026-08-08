@@ -1,5 +1,26 @@
 local M = {}
 
+-- Sidebar: the file tree and the function outline share one slot (like
+-- VS Code's explorer/outline tabs). Opening one closes the other.
+local function toggle_tree()
+  local ok, aerial = pcall(require, "aerial")
+  if ok and aerial.is_open() then
+    aerial.close()
+  end
+  vim.cmd("NvimTreeToggle")
+end
+
+local function toggle_outline()
+  local ok, view = pcall(require, "nvim-tree.view")
+  if ok and view.is_visible() then
+    vim.cmd("NvimTreeClose")
+  end
+  local ok2, aerial = pcall(require, "aerial")
+  if ok2 then
+    aerial.toggle()
+  end
+end
+
 M.keys = {
   -- files & search
   ["<leader>w"] = { "<cmd>w<CR>", "write file" },
@@ -9,6 +30,12 @@ M.keys = {
   ["<leader>s"] = { "<cmd>split<CR>", "horizontal split" },
   ["<leader>ff"] = { "<cmd>FzfLua files<CR>", "fuzzy file search" },
   ["<leader>fg"] = { "<cmd>FzfLua grep<CR>", "fuzzy grep in repo" },
+  ["<leader>fw"] = { "<cmd>FzfLua grep_cword<CR>", "grep word under cursor" },
+  ["<leader>fs"] = { "<cmd>FzfLua lsp_document_symbols<CR>", "symbols in this file" },
+
+  -- sidebar
+  ["<leader>e"] = { toggle_tree, "file tree (explorer)" },
+  ["<leader>a"] = { toggle_outline, "functions outline (symbols)" },
 
   -- python toolchain
   ["<leader>t"] = { "<cmd>Term uv run pytest<CR>", "run tests" },
@@ -35,6 +62,18 @@ function M.setup()
   vim.keymap.set("n", "gD", vim.lsp.buf.references, { desc = "go to references" })
   vim.keymap.set("n", "K", vim.lsp.buf.hover, { desc = "hover docs" })
   vim.keymap.set("n", "<leader>r", vim.lsp.buf.rename, { desc = "rename symbol" })
+  -- VS Code style ctrl+click = go to definition
+  vim.keymap.set("n", "<C-LeftMouse>", vim.lsp.buf.definition, { desc = "ctrl+click: go to definition" })
+  vim.keymap.set("v", "<C-LeftMouse>", vim.lsp.buf.definition, { desc = "ctrl+click: go to definition" })
+
+  -- visual selection -> grep the selection (VS Code "select then search")
+  vim.keymap.set("v", "<leader>fg", "<cmd>FzfLua grep_visual<CR>", { desc = "grep visual selection" })
+
+  -- jumplist: back / forward while tracing code (VS Code alt+left/right)
+  vim.keymap.set("n", "<A-Left>", "<C-o>", { desc = "jump back (previous position)" })
+  vim.keymap.set("n", "<A-Right>", "<C-i>", { desc = "jump forward" })
+  vim.keymap.set("i", "<A-Left>", "<C-o><C-o>", { desc = "jump back (insert mode)" })
+  vim.keymap.set("i", "<A-Right>", "<C-o><C-i>", { desc = "jump forward (insert mode)" })
 
   -- terminal buffers
   vim.keymap.set("t", "<C-h>", "<C-\\><C-n><C-w>h", { desc = "leave terminal: left" })
