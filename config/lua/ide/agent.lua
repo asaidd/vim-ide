@@ -114,7 +114,7 @@ function M.tui()
       return
     end
   end
-  vim.cmd("vsplit")
+  vim.cmd("vsplit | enew")
   vim.fn.termopen("opencode", { cwd = root })
   vim.cmd("startinsert")
 end
@@ -125,7 +125,7 @@ function M.term(cmd)
     cmd = vim.fn.input("command: ", "")
   end
   if cmd == "" then return end
-  vim.cmd("split")
+  vim.cmd("split | enew")
   local root = util.repo_root() or vim.fn.getcwd()
   vim.fn.termopen(cmd, { cwd = root })
   vim.cmd("startinsert")

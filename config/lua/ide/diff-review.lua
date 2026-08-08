@@ -23,7 +23,7 @@ function M.diff_current()
   local base = choose_base(root, "base ref: ")
   if not base then return end
   local file = vim.fn.expand("%:p")
-  vim.cmd("vsplit")
+  vim.cmd("vsplit | enew")
   vim.fn.termopen("git diff " .. vim.fn.shellescape(base) .. " -- " .. vim.fn.fnameescape(file), { cwd = root })
   vim.cmd("startinsert")
 end
