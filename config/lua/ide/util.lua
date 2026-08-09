@@ -51,9 +51,11 @@ end
 --- Async prompt for a git ref with Tab completion over branches.
 --- Calls `on_ok(ref)` with the chosen value; does nothing on cancel.
 --- Async prompt for a git ref with a visible branch picker.
---- Opens an fzf-lua fuzzy list of local + remote branches (the default is
---- pinned to the top). Falls back to vim.ui.input with Tab completion when
---- fzf-lua is unavailable. Calls `on_ok(ref)`; nothing on cancel.
+--- Opens an fzf-lua fuzzy list of local + remote branches. The default is
+--- pre-filled as the query: Enter accepts it, typing edits or replaces it,
+--- Ctrl-u clears it to browse the full list. Falls back to vim.ui.input with
+--- Tab completion when fzf-lua is unavailable. Calls `on_ok(ref)`; nothing on
+--- cancel.
 function M.prompt_ref(prompt, default, root, on_ok)
   local branches = M.git_branches(root)
   local branch = M.current_branch(root)
@@ -63,19 +65,13 @@ function M.prompt_ref(prompt, default, root, on_ok)
   end
   local ok_fzf, fzf = pcall(require, "fzf-lua")
   if ok_fzf and fzf.fzf_exec then
-    local entries = vim.deepcopy(branches)
+    local fzf_opts = { ["--no-multi"] = true }
     if default and default ~= "" then
-      for i, b in ipairs(entries) do
-        if b == default then
-          table.remove(entries, i)
-          break
-        end
-      end
-      table.insert(entries, 1, default)
+      fzf_opts["--query"] = default
     end
-    fzf.fzf_exec(entries, {
+    fzf.fzf_exec(branches, {
       prompt = label .. " > ",
-      fzf_opts = { ["--no-multi"] = true },
+      fzf_opts = fzf_opts,
       actions = {
         default = function(selected)
           if selected and selected[1] and selected[1] ~= "" then
@@ -114,11 +110,25 @@ function M.prompt_ref(prompt, default, root, on_ok)
 end
 
 --- Create a scratch buffer, make it current, return the handle.
+--- Reuses an existing buffer with the same name (no E95 on repeated opens).
 function M.open_scratch(name, filetype)
-  local buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = buf })
+  local escaped = name:gsub("([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1")
+  local buf
+  for _, b in ipairs(vim.api.nvim_list_bufs()) do
+    local bname = vim.api.nvim_buf_get_name(b)
+    if bname == name or bname:match("[/\\]" .. escaped .. "$") then
+      buf = b
+      break
+    end
+  end
+  if not buf then
+    buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = buf })
+    vim.api.nvim_buf_set_name(buf, name)
+  else
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, {})
+  end
   vim.api.nvim_set_option_value("filetype", filetype, { buf = buf })
-  vim.api.nvim_buf_set_name(buf, name)
   vim.api.nvim_set_current_buf(buf)
   vim.keymap.set("n", "gF", M.jump_ref, { buffer = buf, desc = "jump to file:line ref" })
   return buf
