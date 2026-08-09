@@ -51,12 +51,12 @@ end
 --- Async prompt for a git ref with Tab completion over branches.
 --- Calls `on_ok(ref)` with the chosen value; does nothing on cancel.
 --- Async prompt for a git ref with a visible branch picker.
---- Opens an fzf-lua fuzzy list of local + remote branches. The default is
---- pre-filled as the query: Enter accepts it, typing edits or replaces it,
---- Ctrl-u clears it to browse the full list. Falls back to vim.ui.input with
---- Tab completion when fzf-lua is unavailable. Calls `on_ok(ref)`; nothing on
---- cancel.
-function M.prompt_ref(prompt, default, root, on_ok)
+--- Opens an fzf-lua fuzzy list of local + remote branches (plus any `extra`
+--- entries such as "HEAD" or "working tree"). The default is pre-filled as
+--- the query: Enter accepts it, typing edits or replaces it, Ctrl-u clears
+--- it to browse the full list. Falls back to vim.ui.input with Tab completion
+--- when fzf-lua is unavailable. Calls `on_ok(ref)`; nothing on cancel.
+function M.prompt_ref(prompt, default, root, on_ok, extra)
   local branches = M.git_branches(root)
   local branch = M.current_branch(root)
   local label = prompt
@@ -65,11 +65,27 @@ function M.prompt_ref(prompt, default, root, on_ok)
   end
   local ok_fzf, fzf = pcall(require, "fzf-lua")
   if ok_fzf and fzf.fzf_exec then
+    local entries = {}
+    for _, e in ipairs(extra or {}) do
+      entries[#entries + 1] = e
+    end
+    for _, b in ipairs(branches) do
+      local dup = false
+      for _, e in ipairs(entries) do
+        if e == b then
+          dup = true
+          break
+        end
+      end
+      if not dup then
+        entries[#entries + 1] = b
+      end
+    end
     local fzf_opts = { ["--no-multi"] = true }
     if default and default ~= "" then
       fzf_opts["--query"] = default
     end
-    fzf.fzf_exec(branches, {
+    fzf.fzf_exec(entries, {
       prompt = label .. " > ",
       fzf_opts = fzf_opts,
       actions = {

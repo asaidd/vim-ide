@@ -45,63 +45,78 @@ function M.diff_stat()
   end)
 end
 
---- :DiffBrowse — route page of every changed file in the branch.
+--- :DiffBrowse — route page of every changed file, GitLens style: pick the
+--- base ref and then the ref to compare against (working tree by default,
+--- or any branch/commit — type e.g. "main~1" to compare with a revision).
 --- Enter on a file opens its diff in a terminal split below the list.
 function M.browse()
   local root = util.repo_root()
   if not root then return end
+  local worktree = "working tree (incl. uncommitted)"
   util.prompt_ref("base ref", util.default_base(root), root, function(base)
-    local out = vim.fn.system(
-      "git -C "
-        .. vim.fn.shellescape(root)
-        .. " diff --numstat "
-        .. vim.fn.shellescape(base)
-    )
-    if vim.v.shell_error ~= 0 then
-      vim.notify("vim-ide: git diff --numstat failed", vim.log.levels.ERROR)
-      return
+    local extra = { worktree }
+    local cur = util.current_branch(root)
+    if cur and cur ~= "" then
+      extra[#extra + 1] = cur
     end
-    local files = {}
-    for _, line in ipairs(vim.split(out, "\n")) do
-      local added, deleted, file = line:match("^(%S+)%s+(%S+)%s+(.+)$")
-      if file then
-        files[#files + 1] = { added = added, deleted = deleted, file = file }
+    extra[#extra + 1] = "HEAD"
+    util.prompt_ref("compare with", worktree, root, function(head)
+      local scope = " (working tree)"
+      local head_ref
+      if head ~= worktree then
+        head_ref = head
+        scope = "  ->  " .. head
       end
-    end
-    local buf = util.open_scratch("diff-browse", "text")
-    util.append(buf, { "Changed files vs " .. base .. "  (Enter = diff, q = close)", "" })
-    for _, f in ipairs(files) do
-      util.append(buf, { string.format("+%s -%s  %s", f.added, f.deleted, f.file) })
-    end
-    if #files == 0 then
-      util.append(buf, {
-        "no changes found vs " .. base .. " (committed or uncommitted)",
-        "hint: the route page compares against the working tree,",
-        "      so new edits show up even before you commit.",
-      })
-    end
-    vim.keymap.set("n", "<CR>", function()
-      M.diff_file(root, base, vim.api.nvim_get_current_line())
-    end, { buffer = buf })
+      local args = { "git", "-C", root, "diff", "--numstat", base }
+      if head_ref then
+        args[#args + 1] = head_ref
+      end
+      local out = vim.fn.system(args)
+      if vim.v.shell_error ~= 0 then
+        vim.notify("vim-ide: git diff --numstat failed", vim.log.levels.ERROR)
+        return
+      end
+      local files = {}
+      for _, line in ipairs(vim.split(out, "\n")) do
+        local added, deleted, file = line:match("^(%S+)%s+(%S+)%s+(.+)$")
+        if file then
+          files[#files + 1] = { added = added, deleted = deleted, file = file }
+        end
+      end
+      local buf = util.open_scratch("diff-browse", "text")
+      util.append(buf, { "Changed files: " .. base .. scope .. "  (Enter = diff, q = close)", "" })
+      for _, f in ipairs(files) do
+        util.append(buf, { string.format("+%s -%s  %s", f.added, f.deleted, f.file) })
+      end
+      if #files == 0 then
+        util.append(buf, {
+          "no changes found for " .. base .. scope,
+          "hint: working tree shows uncommitted edits; or type a revision",
+          "      like main~1 or a commit hash to compare against it.",
+        })
+      end
+      vim.keymap.set("n", "<CR>", function()
+        M.diff_file(root, base, head_ref, vim.api.nvim_get_current_line())
+      end, { buffer = buf })
+    end, extra)
   end)
 end
 
 --- Open the diff of a single file from a route-page line ("+1 -0  path").
-function M.diff_file(root, base, line)
+--- `head` is nil when comparing against the working tree.
+function M.diff_file(root, base, head, line)
   local file = line:match("^%+%S+ %-%S+  (.+)$")
   if not file then
     return
   end
+  local args = { "git", "-C", root, "diff", base }
+  if head then
+    args[#args + 1] = head
+  end
+  args[#args + 1] = "--"
+  args[#args + 1] = file
   vim.cmd("split | enew")
-  vim.fn.termopen(
-    "git -C "
-      .. vim.fn.shellescape(root)
-      .. " diff "
-      .. vim.fn.shellescape(base)
-      .. " -- "
-      .. vim.fn.shellescape(file),
-    { cwd = root }
-  )
+  vim.fn.termopen(args, { cwd = root })
   vim.cmd("startinsert")
 end
 
