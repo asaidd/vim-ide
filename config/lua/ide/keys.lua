@@ -50,6 +50,7 @@ M.keys = {
   -- quick diff views (no agent)
   ["<leader>df"] = { "<cmd>DiffReviewCurrent<CR>", "diff of current file" },
   ["<leader>ds"] = { "<cmd>DiffStat<CR>", "diff --stat of the branch" },
+  ["<leader>db"] = { "<cmd>DiffBrowse<CR>", "browse all changed files (route page)" },
 }
 
 function M.setup()

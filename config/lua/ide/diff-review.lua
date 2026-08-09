@@ -42,7 +42,65 @@ function M.diff_stat()
   end)
 end
 
+--- :DiffBrowse — route page of every changed file in the branch.
+--- Enter on a file opens its diff in a terminal split below the list.
+function M.browse()
+  local root = util.repo_root()
+  if not root then return end
+  util.prompt_ref("base ref", util.default_base(root), root, function(base)
+    local out = vim.fn.system(
+      "git -C "
+        .. vim.fn.shellescape(root)
+        .. " diff --numstat "
+        .. vim.fn.shellescape(base)
+        .. "...HEAD"
+    )
+    if vim.v.shell_error ~= 0 then
+      vim.notify("vim-ide: git diff --numstat failed", vim.log.levels.ERROR)
+      return
+    end
+    local files = {}
+    for _, line in ipairs(vim.split(out, "\n")) do
+      local added, deleted, file = line:match("^(%S+)%s+(%S+)%s+(.+)$")
+      if file then
+        files[#files + 1] = { added = added, deleted = deleted, file = file }
+      end
+    end
+    local buf = util.open_scratch("diff-browse", "text")
+    util.append(buf, { "Changed files vs " .. base .. "...HEAD  (Enter = diff, q = close)", "" })
+    for _, f in ipairs(files) do
+      util.append(buf, { string.format("+%s -%s  %s", f.added, f.deleted, f.file) })
+    end
+    vim.keymap.set("n", "<CR>", function()
+      M.diff_file(root, base, vim.api.nvim_get_current_line())
+    end, { buffer = buf })
+    if #files == 0 then
+      vim.notify("vim-ide: no changed files vs " .. base, vim.log.levels.INFO)
+    end
+  end)
+end
+
+--- Open the diff of a single file from a route-page line ("+1 -0  path").
+function M.diff_file(root, base, line)
+  local file = line:match("^%+%S+ %-%S+  (.+)$")
+  if not file then
+    return
+  end
+  vim.cmd("split | enew")
+  vim.fn.termopen(
+    "git -C "
+      .. vim.fn.shellescape(root)
+      .. " diff "
+      .. vim.fn.shellescape(base)
+      .. "...HEAD -- "
+      .. vim.fn.shellescape(file),
+    { cwd = root }
+  )
+  vim.cmd("startinsert")
+end
+
 vim.api.nvim_create_user_command("DiffReviewCurrent", function() M.diff_current() end, {})
 vim.api.nvim_create_user_command("DiffStat", function() M.diff_stat() end, {})
+vim.api.nvim_create_user_command("DiffBrowse", function() M.browse() end, {})
 
 return M

@@ -63,6 +63,7 @@ same terminal instead of stacking another one.
 
 | Keys | Command | What it does |
 |---|---|---|
+| `Space d b` | `:DiffBrowse` | **route page**: every changed file in the branch, with +add / -del counts; `Enter` on a file opens its diff in a split below |
 | `Space d s` | `:DiffStat` | change statistics of the branch (first look: what changed at all) |
 | `Space d f` | `:DiffReviewCurrent` | full git diff of the **current file** in a terminal split |
 
