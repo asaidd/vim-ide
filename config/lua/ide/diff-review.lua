@@ -31,7 +31,10 @@ function M.diff_stat()
   if not root then return end
   util.prompt_ref("base ref", util.default_base(root), root, function(base)
     local out = vim.fn.system(
-      "git -C " .. vim.fn.shellescape(root) .. " diff --stat " .. vim.fn.shellescape(base) .. "...HEAD"
+      "git -C "
+        .. vim.fn.shellescape(root)
+        .. " diff --stat "
+        .. vim.fn.shellescape(base)
     )
     if vim.v.shell_error ~= 0 then
       vim.notify("vim-ide: git diff --stat failed", vim.log.levels.ERROR)
@@ -53,7 +56,6 @@ function M.browse()
         .. vim.fn.shellescape(root)
         .. " diff --numstat "
         .. vim.fn.shellescape(base)
-        .. "...HEAD"
     )
     if vim.v.shell_error ~= 0 then
       vim.notify("vim-ide: git diff --numstat failed", vim.log.levels.ERROR)
@@ -67,16 +69,20 @@ function M.browse()
       end
     end
     local buf = util.open_scratch("diff-browse", "text")
-    util.append(buf, { "Changed files vs " .. base .. "...HEAD  (Enter = diff, q = close)", "" })
+    util.append(buf, { "Changed files vs " .. base .. "  (Enter = diff, q = close)", "" })
     for _, f in ipairs(files) do
       util.append(buf, { string.format("+%s -%s  %s", f.added, f.deleted, f.file) })
+    end
+    if #files == 0 then
+      util.append(buf, {
+        "no changes found vs " .. base .. " (committed or uncommitted)",
+        "hint: the route page compares against the working tree,",
+        "      so new edits show up even before you commit.",
+      })
     end
     vim.keymap.set("n", "<CR>", function()
       M.diff_file(root, base, vim.api.nvim_get_current_line())
     end, { buffer = buf })
-    if #files == 0 then
-      vim.notify("vim-ide: no changed files vs " .. base, vim.log.levels.INFO)
-    end
   end)
 end
 
@@ -92,7 +98,7 @@ function M.diff_file(root, base, line)
       .. vim.fn.shellescape(root)
       .. " diff "
       .. vim.fn.shellescape(base)
-      .. "...HEAD -- "
+      .. " -- "
       .. vim.fn.shellescape(file),
     { cwd = root }
   )
